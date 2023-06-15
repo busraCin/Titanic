@@ -4,12 +4,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-import missingno as msno
-from datetime import date
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import LocalOutlierFactor
-from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, RobustScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, RobustScaler
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -24,7 +21,7 @@ df = load()
 df.head()
 df.info()
 
-df.columns = [col.upper() for col in df.columns] #değişken isimlerini büyük harfle yaz
+df.columns = [col.upper() for col in df.columns] 
 
 #Özellik Mühendisliği ile Değişken Sayımızı Arttıralım
 #Cabin bool
@@ -156,10 +153,13 @@ binary_cols = [col for col in df.columns if df[col].dtype not in [int, float,"in
                and df[col].nunique() == 2]
 
 #Label Encoder
-def label_encoder(dataframe, binary_cols):
+def label_encoder(dataframe, binary_col):
     labelencoder = LabelEncoder()
-    dataframe[binary_cols] = labelencoder.fit_transform(dataframe[binary_cols])
+    dataframe[binary_col] = labelencoder.fit_transform(dataframe[binary_col])
     return dataframe
+
+binary_cols = [col for col in df.columns if df[col].dtype not in [int, float,"int64"]
+               and df[col].nunique() == 2]
 
 for col in binary_cols:
     df = label_encoder(df, col)
@@ -205,7 +205,7 @@ useless_cols = [col for col in df.columns if df[col].nunique() == 2 and
                 (df[col].value_counts() / len(df) < 0.01).any(axis=None)]
 # df.drop(useless_cols, axis=1, inplace=True)
 
-""" ihtiyaca yönelik yapılabilir.
+"""
 #Standart Scaler
 scaler = StandardScaler()
 df[num_cols] = scaler.fit_transform(df[num_cols])
@@ -213,18 +213,18 @@ df[num_cols].head()
 """
 
 #Model
-y = df["SURVIVED"] #bağımlı değiken
-X = df.drop(["PASSENGERID", "SURVIVED"], axis=1) #bağımsız değişkenle bunların dışındakiler
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=17) #x_train ilemodeli oluştur
+y = df["SURVIVED"] 
+X = df.drop(["PASSENGERID", "SURVIVED"], axis=1) 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=17) 
 
-from sklearn.ensemble import RandomForestClassifier #ağaç
+from sklearn.ensemble import RandomForestClassifier 
 
 rf_model = RandomForestClassifier(random_state=46).fit(X_train, y_train) #modelleme
-y_pred = rf_model.predict(X_test) #x_test setindeki x bağımsız değişkenlerini modele sor, tahmin
-accuracy_score(y_pred, y_test) #bizde olan x_test setindeki x bağımsız değişkenlerini y_pred ile kıyasla
+y_pred = rf_model.predict(X_test) 
+accuracy_score(y_pred, y_test) 
 
 
-
+#Kontrol
 def plot_importance(model, features, num=len(X), save=False):
     feature_imp = pd.DataFrame({'Value': model.feature_importances_, 'Feature': features.columns})
     plt.figure(figsize=(10, 10))
