@@ -110,7 +110,7 @@ for col in num_cols:
     print(col, check_outlier(df, col))
 
 
-#Missing values (Eksik Değerle)
+#Missing values
 
 def missing_values_table(dataframe, na_name=False):
     na_columns = [col for col in dataframe.columns if dataframe[col].isnull().sum() > 0]
